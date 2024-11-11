@@ -14,12 +14,12 @@ class Rubric(models.Model):
 class Bb(models.Model):
     # KINDS = ('b', 'Куплю', 's', 'Продам', 'c', 'Обменяю')
     KINDS = ((None, 'Выберите тип публикуемого объявление'), ('b','Куплю'), ('s', 'Продам'), ('c', 'Обменяю'))
-    kind = models.CharField(max_length=1, choices=KINDS, default='s')
+    kind = models.CharField(max_length=1, choices=KINDS, default='b')
     rubric = models.ForeignKey('Rubric', null=True, on_delete=models.PROTECT, verbose_name='Рубрик')
-    title = models.CharField(max_length=50, verbose_name='Товар')
+    title = models.CharField(max_length=100, verbose_name='Товар')
     content = models.TextField(null=True, blank=True, verbose_name='Описание')
     # price = models.FlotField(null=True, blank=True, verbose_name='Цена')
-    price = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, verbose_name='Цена')
+    price = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True, verbose_name='Цена')
     published = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name='Опубликовано')
     # is_active = models.Boolean
     # email = models.EmailField()
@@ -33,4 +33,12 @@ class Bb(models.Model):
         unique_together = ('title', 'published')
         verbose_name = 'Объявление'
         verbose_name_plural = 'Объявления'
+
+
+from django import models
+
+class NewModel(models.Model):
+models.CharField(max_length=100)
+models.TextField()
+
 

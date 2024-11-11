@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'bboard',
+    'python manage.py makemigrations new_app'
+    'python manage.py migrate new_app'
+
 ]
 
 MIDDLEWARE = [
