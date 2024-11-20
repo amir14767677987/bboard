@@ -10,7 +10,7 @@ from bboard.models import Bb, Rubric
 
 def index(request):
     bbs = Bb.objects.order_by('-published')
-    rubrics = Rubric.objects.all()
+    rubrics = Rubric.objects.annotate(cnt=Count)
     context = {'bbs': bbs, 'rubrics': rubrics}
 
     return render(request, 'bboard/index.html', context)
