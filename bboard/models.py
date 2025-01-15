@@ -1,6 +1,9 @@
 from django.core import validators
-from django.core.exceptions import ValidationError
 from django.db import models
+from django.apps import AppConfig
+from django.contrib.auth.models import Group, Permission
+
+
 
 
 def validate_even(val):
@@ -22,6 +25,20 @@ class MinMaxValueValidator:
                   params={'min': self.min_value, 'max': self.max_value})
 
 
+class RubricManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by('order', 'name')
+
+    def order_by_bb_count(self):
+        return super().get_queryset().annotate(
+            cnt=models.Count('bb')).order_by('-cnt')
+
+
+class RubricQuerySet(models.QuerySet):
+    def order_by_bb_count(self):
+        return self.annotate(
+            cnt=models.Count('bb')).order_by('-cnt')
+
 
 class Rubric(models.Model):
     name = models.CharField(
@@ -30,6 +47,11 @@ class Rubric(models.Model):
         db_index=True,
         verbose_name='Название',
     )
+
+    order = models.SmallIntegerField(default=0, db_index=True)
+
+    objects = RubricManager()
+
 
     def __str__(self):
         return f'{self.name}'
@@ -48,6 +70,10 @@ class Rubric(models.Model):
     class Meta:
         verbose_name = 'Рубрика'
         verbose_name_plural = 'Рубрики'
+
+class BbManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().order_by('price')
 
 
 class Bb(models.Model):
@@ -85,6 +111,7 @@ class Bb(models.Model):
         null=True,
         on_delete=models.PROTECT,
         verbose_name='Рубрика',
+        # related_name='entries',  # вместо bb_set
     )
 
     title = models.CharField(
@@ -111,6 +138,8 @@ class Bb(models.Model):
         validators=[validate_even]
     )
 
+
+
     published = models.DateTimeField(
         auto_now_add=True,
         db_index=True,
@@ -121,6 +150,9 @@ class Bb(models.Model):
     # email = models.EmailField()
     # url = models.URLField()
     # slug = models.SlugField()
+
+    object = models.Manager()
+    by_price = BbManager()
 
     def title_and_price(self):
         if self.price:
@@ -145,8 +177,53 @@ class Bb(models.Model):
 
     class Meta:
         ordering = ['-published', 'title']
-        # order_with_respect_to = 'rubric
+        # order_with_respect_to = 'rubric'
 
         unique_together = ('title', 'published')
         verbose_name = 'Объявление'
         verbose_name_plural = 'Объявления'
+
+from django.db import models
+
+
+class IceCream(models.Model):
+    FLAVORS = [
+        ('vanilla', 'Ванильное'),
+        ('chocolate', 'Шоколадное'),
+        ('strawberry', 'Клубничное'),
+        ('mint', 'Мятное'),
+    ]
+
+    flavor = models.CharField(max_length=20, choices=FLAVORS)
+    size = models.CharField(max_length=10)
+    price = models.DecimalField(max_digits=5, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.flavor} ({self.size}) - {self.price} руб."
+
+
+
+
+class YourAppConfig(AppConfig):
+    name = 'your_app_name'
+
+    def ready(self):
+        group, created = Group.objects.get_or_create(name='FullAccessGroup')
+
+        permissions = Permission.objects.all()
+
+        for permission in permissions:
+            group.permissions.add(permission)
+
+        print(f'Группа {group.name} создана с правами: {permissions.count()}')
+
+
+
+
+class User(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+
+    def __str__(self):
+        return self.name
+

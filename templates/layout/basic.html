@@ -1,34 +1,22 @@
 <!DOCTYPE html>
-
-{% load static %}
-
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Главная{% endblock %} :: Доска объявлений</title>
-
-    <link rel="stylesheet" href="{% static 'bboard/style.css' %}">
+    <title>Все пользователи</title>
 </head>
 <body>
-
-<header>
-    <h1>Объявления</h1>
-</header>
-
-<nav>
-    <a href="{% url 'bboard:index' %}">Главная</a>
-    <a href="{% url 'bboard:add' %}">Добавить</a>
-    {% for rubric in rubrics %}
-        <a href="{% url 'bboard:by_rubric' rubric.pk %}">{{ rubric.name }}
-            ({{ rubrc.cnt }})</a
-<!--{#        <a href="{{ rubric.get_absolute_url }}">{{ rubric.name }}</a>#}-->
-    {% endfor %}
-</nav>
-
-<section>
-    {% block content %}
-    {% endblock %}
-</section>
-
+    <h1>Все пользователи</h1>
+    <ul>
+        {% for user in users %}
+            <li>ID: {{ user.id }}, Name: {{ user.name }}, Email: {{ user.email }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Получить данные о пользователе по ID</h2>
+    <form method="post" action="{% url 'user_detail' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Получить данные</button>
+    </form>
 </body>
 </html>
+

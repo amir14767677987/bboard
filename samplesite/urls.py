@@ -28,4 +28,5 @@ urlpatterns = [
 #         path('', index, name='index'),
 #
 #     ])),
+    path('captcha/', include('captcha.urls')),
 ]

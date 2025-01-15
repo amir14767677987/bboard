@@ -39,6 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
+
+    'captcha',
+    'precise_bbcode'
 
     'bboard',  # 'bboard.apps.BboardConfig',
     'testapp',
@@ -58,7 +62,8 @@ ROOT_URLCONF = 'samplesite.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        # 'BACKEND': 'django.template.backends.django.jinja2.jinja2',
         'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -78,16 +83,23 @@ WSGI_APPLICATION = 'samplesite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#         # 'ATOMIC_REQUEST': False,
+#         # 'AUTOCOMMIT': True,
+#         }
+#
 
+    #   'default': {
+    #          'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #          'NAME': 'django_db',
+    #          'USER': 'db_user',
+    #          'PASSWORD': '12345',
+    #          'PORT': '5432',
+    #   }
 
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -134,3 +146,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ABSOLUTE_URL_OVERRIDES = {
 #     'bboard.rubric': lambda rec: f"{rec.pk}/"
 # }
+
+BBCODE_NEWLINE = 'E'
