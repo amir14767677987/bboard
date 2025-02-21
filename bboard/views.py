@@ -1,3 +1,5 @@
+from asyncio import Task
+
 from django.db.models import Count
 from django.http import (HttpResponse, HttpResponseRedirect, HttpResponseNotFound,
                          Http404, StreamingHttpResponse, FileResponse, JsonResponse)
@@ -16,10 +18,11 @@ from django.views.generic.edit import CreateView, FormView, UpdateView, DeleteVi
 
 from bboard.forms import BbForm, SearchForm
 from bboard.models import Bb, Rubric
-
+from rest_framework import status, generics
+from rest_framework.views import APIView
 from django.shortcuts import render
 from datetime import datetime
-
+from rest_framework.decorators import api_view, permission_classes
 from django.shortcuts import render
 
 from django.shortcuts import render, redirect
@@ -28,6 +31,19 @@ from .forms import IceCreamForm
 from django.shortcuts import render, get_object_or_404
 from .models import User
 from .forms import UserForm
+
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+
+from django.http import JsonResponse, HttpResponse, Http404
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.contrib.auth.models import User
+# from bboard.serializers import RubricSerializer
+
+
+
+
 
 
 # Основной (вернуть)
@@ -41,8 +57,22 @@ def index(request):
 
 
 def index(request):
+
+
+    # if 'counter' in request.COOKIES:
+    #     cnt = int(request.COOKIES['counter']) + 1
+    # else:
+    #     cnt = 1
+
+
+    # response = HttpResponse('Hello' + str(cnt))
+    # response.set_cookie('counter', cnt) 
+    # return response
+    #
+    # print(cnt)
+
     bbs = Bb.objects.order_by('-published')
-    rubrics = Rubric.objects.annotate(cnt=Count('bb')).filter(cnt__gt=0)
+    # rubrics = Rubric.objects.annotate(cnt=Count('bb')).filter(cnt__gt=0)
 
     paginator = Paginator(bbs, 2)
 
@@ -54,10 +84,6 @@ def index(request):
     page = paginator.get_page(page_num)
 
     # context = {'bbs': page.objects_list, 'rubrics'}
-
-
-
-
 
 
 
@@ -299,3 +325,79 @@ def user_detail(request):
     else:
         form = UserForm()
     return render(request, 'users/user_detail.html', {'form': form})
+
+
+
+def custom_login_required(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('your_redirect_url')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+
+
+@csrf_exempt
+def task_list(request):
+    if request.method == 'GET':
+        tasks = Task.objects.all().values()
+        return JsonResponse(list(tasks), safe=False)
+
+    elif request.method == 'POST':
+        data = json.loads(request.body)
+        task = Task.objects.create(title=data['title'], description=data.get('description', ''), completed=False)
+        return JsonResponse({'id': task.id, 'title': task.title, 'description': task.description, 'completed': task.completed}, status=201)
+
+    @csrf_exempt
+    def user_list(request):
+        if request.method == 'GET':
+            users = User.objects.all().values('id', 'username', 'email')
+            return JsonResponse(list(users), safe=False)
+
+    def user_detail(request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            raise Http404("User does not exist")
+
+        if request.method == 'GET':
+            return JsonResponse({'id': user.id, 'username': user.username, 'email': user.email})
+
+
+##### APIVeiew #####
+class APIRRubrics(APIView):
+    def get(self, request):
+        rubrics = Rubric.objects.all()
+        serializer = RubricSerializer(rubrics, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = RubricSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+# ##### generics #####
+# class APIRubrics(generics.ListCreateAPIView):
+#     queryset = Rubric.objects.all()
+#     serializer_class = RubricSerializer
+#
+#
+# class APIRubricDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Rubric.objects.all()
+#     serializer_class = RubricSerializer
+#
+# ### ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
+# class APIRubricList(generics.ListAPIView):
+#     queryset = Rubric.objects.all()
+#     serializer_class = RubricSerializer
+
+##### Метаконтроллеры #####
+# class APIRubricViewSet(ModelViewSet):
+#     queryset = Rubric.objects.all()
+#     serializer_class = RubricSerializer
+#     # premission_class = (IsAuthenticated,)
+
+
+
+
+

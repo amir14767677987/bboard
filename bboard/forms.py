@@ -5,12 +5,26 @@ from django import forms
 from .models import IceCream, Rubric
 from bboard.models import Bb
 from django import forms
-from captcha.fields import CaptchaField
-class BbForm(ModelForm):
-    captcha = CaptchaField(label='Введите текст с картинки')
-    class Meta:
-        model = Bb
-        fields = ('title', 'content', 'price', 'rubric')
+# from captcha.fields import CaptchaField
+from bboard.models import Bb, Rubric, Img
+from django import forms
+
+class ImgForm(ModelForm):
+    img = forms.ImageField(
+        label='Изображение',
+        validators=[validators.FileExtensionValidator(
+        allowed_extensions=('gif', 'jpg', 'png'))],
+        error_messages={
+        'invalid_extension': 'Этот формат не подерживается'})
+
+    desc = forms.CharField(Label='Описание',
+                           widget=forms.widgets.Textarea())
+
+# class BbForm(ModelForm):
+#     captcha = CaptchaField(label='Введите текст с картинки')
+#     class Meta:
+#         model = Bb
+#         fields = ('title', 'content', 'price', 'rubric')
 
 
 BbForm = modelform_factory(

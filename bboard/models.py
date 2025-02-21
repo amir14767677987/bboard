@@ -1,7 +1,22 @@
+import os
+from datetime import datetime
+from os.path import splitext
+
+from django.core.exceptions import ValidationError
 from django.core import validators
 from django.db import models
 from django.apps import AppConfig
 from django.contrib.auth.models import Group, Permission
+
+
+
+
+class PROFILE(models.Model):
+
+
+def get_timestamp_path(instance, filename):
+    # return '%s%s' % (datetime.now().timestamp(),
+    return f'{datetime.now().timestamp()}{splitext(filename)[1]}'
 
 
 
@@ -32,6 +47,15 @@ class RubricManager(models.Manager):
     def order_by_bb_count(self):
         return super().get_queryset().annotate(
             cnt=models.Count('bb')).order_by('-cnt')
+
+class Img(models.Model):
+    img = models.ImageField(verbose_name='Изображение',
+                            upload_to=get_timestamp_path)
+    desc = models.TextField(verbose_name='Описание')
+
+    class Meta:
+        verbose_name = 'Изображение'
+        verbose_name_plural = 'Изображения'
 
 
 class RubricQuerySet(models.QuerySet):
@@ -151,6 +175,16 @@ class Bb(models.Model):
     # url = models.URLField()
     # slug = models.SlugField()
 
+    # archive = models.BooleanField()
+    # email = models.EmailField()
+    # url = models.URLField()
+    # slug = models.SlugField()
+    #
+    # arhive = models.FileField(upload_to='arhive/')
+    # arhive_url = models.URLField(upload_to='arhive/%Y')
+
+    img = models.ImageField(defaul=None, verbose_name='Изображение')
+
     object = models.Manager()
     by_price = BbManager()
 
@@ -182,8 +216,6 @@ class Bb(models.Model):
         unique_together = ('title', 'published')
         verbose_name = 'Объявление'
         verbose_name_plural = 'Объявления'
-
-from django.db import models
 
 
 class IceCream(models.Model):
@@ -226,4 +258,14 @@ class User(models.Model):
 
     def __str__(self):
         return self.name
+
+
+    class Task(models.Model):
+        title = models.CharField(max_length=200)
+        description = models.TextField(blank=True)
+        completed = models.BooleanField(default=False)
+
+        def __str__(self):
+            return self.title
+
 
